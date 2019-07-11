@@ -1,115 +1,42 @@
-// Variales globales
+const app = new Vue({
 
-const formularioUI = document.querySelector('#formulario');
-const listaActividadesUI = document.getElementById('listaActividades');
-
-let arrayActividades = []; 
-
-// Funciones
-
-const CrearItem = (actividad) => {
-
-    let item = {
-        actividad: actividad,
+  el:'#app',
+  data: { 
+    titulo: 'GYM con Vue',
+    tareas: [],
+    nuevaTarea: ''
+  },
+  methods:{
+    agregarTarea: function(){
+ 
+      this.tareas.push({
+        nombre: this.nuevaTarea,
         estado: false
+      })
+      
+      this.nuevaTarea = ''; 
+      localStorage.setItem('gym-vue', JSON.stringify(this.tareas)); 
+      
+    },
+
+    editarTarea: function(index){
+      this.tareas[index].estado = true; 
+      localStorage.setItem('gym-vue', JSON.stringify(this.tareas));
+    }, 
+
+    eliminar: function(index){
+      this.tareas.splice(index, 1); 
+      localStorage.setItem('gym-vue', JSON.stringify(this.tareas));
     }
 
-    arrayActividades.push(item); 
-
-    return item
-}
-
-const GuardarDB = () => {
-
-    localStorage.setItem('rutina', JSON.stringify(arrayActividades))
-
-    PintarDB(); 
-
-}
-
-const PintarDB = () => {
-
-    listaActividadesUI.innerHTML = ''; 
-
-    arrayActividades = JSON.parse(localStorage.getItem('rutina'));
-    
-    if(arrayActividades === null){
-        arrayActividades = []; 
-    } else{
-
-        arrayActividades.forEach(element => {
-          if(element.estado){
-            listaActividadesUI.innerHTML += `
-                <div class="alert alert-success" role="alert"><i class="material-icons float-left mr-2">accessibility_new</i><b>${element.actividad}</b> - ${element.estado}<span class="float-right"><i class="material-icons">done</i><i class="material-icons">delete</i></span></div>
-            `
-          }else{
-            listaActividadesUI.innerHTML += `
-                <div class="alert alert-danger" role="alert"><i class="material-icons float-left mr-2">accessibility_new</i><b>${element.actividad}</b> - ${element.estado}<span class="float-right"><i class="material-icons">done</i><i class="material-icons">delete</i></span></div>
-            `
-          }
-            
-        });
-
+  },
+  created: function(){
+    let datosDB = JSON.parse(localStorage.getItem('gym-vue')); 
+    if(datosDB === null){
+      this.tareas = []; 
+    }else{
+      this.tareas = datosDB; 
     }
+  }
 
-}
-
-const eliminarDB = (actividad) => {
-  let indexArray; 
-  arrayActividades.forEach((element, index) => {
-
-    if(element.actividad === actividad){
-      indexArray = index; 
-    }
-    
-  });
-
-  arrayActividades.splice(indexArray, 1); 
-  GuardarDB(); 
-
-}
-
-const editarDB = (actividad) => {
-
-  let indexArray = arrayActividades.findIndex((element) => element.actividad === actividad); 
-  
-  arrayActividades[indexArray].estado = true; 
-
-  GuardarDB(); 
-}
-
-// EventListener
-
-formularioUI.addEventListener('submit', (e) => {
-
-    e.preventDefault(); 
-    let actividadUI = document.querySelector('#actividad').value; 
-
-    CrearItem(actividadUI); 
-    GuardarDB(); 
-
-    formularioUI.reset(); 
-
-})
-
-document.addEventListener('DOMContentLoaded', PintarDB); 
-
-listaActividadesUI.addEventListener('click', (e) => {
-    
-    e.preventDefault(); 
-
-    if(e.target.innerHTML === 'done' || e.target.innerHTML === 'delete'){
-        let texto = e.path[2].childNodes[1].innerHTML;
-        
-        if(e.target.innerHTML === 'delete'){
-          //Acción de eliminar
-          eliminarDB(texto); 
-        }
-        if(e.target.innerHTML === 'done'){
-          //Acción de editar
-          editarDB(texto);
-
-        }
-    }
-
-})
+}); 
